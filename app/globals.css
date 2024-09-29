@@ -14,9 +14,6 @@
   }
 }
 
-body {
-  color: var(--foreground);
-}
 
 @layer utilities {
   .text-balance {
