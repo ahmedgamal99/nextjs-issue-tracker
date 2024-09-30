@@ -1,7 +1,7 @@
 "use client"; // Ensure the whole file is treated as a client-side component
 
 import React, { useState } from "react";
-import { Button, TextField } from "@radix-ui/themes";
+import { Button, TextField, Callout } from "@radix-ui/themes";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import { useForm, Controller } from "react-hook-form";
@@ -20,32 +20,43 @@ const NewIssuePage = () => {
 
   const router = useRouter();
 
-  const [description, setDescription] = useState("");
+  const [error, setError] = useState("");
 
   return (
-    <form
-      className="max-w-xl space-y-3"
-      onSubmit={handleSubmit(async (data) => {
-        await axios.post("/api/issues", data);
-        router.push("/issues");
-      })}
-    >
-      <TextField.Root placeholder="Title" {...register("title")} />
-      <Controller
-        name="description"
-        control={control}
-        defaultValue="" // Add a default value for the description
-        render={({ field }) => (
-          <SimpleMDE
-            {...field}
-            value={field.value || ""} // Set the value to the controlled state
-            onChange={field.onChange} // Call the onChange from react-hook-form
-            placeholder="Description"
-          />
-        )}
-      />
-      <Button>Submit New Issue</Button>
-    </form>
+    <div className="max-w-xl ">
+      {error && (
+        <Callout.Root className="mb-5" color="red">
+          <Callout.Text>{error}</Callout.Text>
+        </Callout.Root>
+      )}
+      <form
+        className="space-y-3"
+        onSubmit={handleSubmit(async (data) => {
+          try {
+            await axios.post("/api/issues", data);
+            router.push("/issues");
+          } catch (error) {
+            setError("An Unexpected Error Occured");
+          }
+        })}
+      >
+        <TextField.Root placeholder="Title" {...register("title")} />
+        <Controller
+          name="description"
+          control={control}
+          defaultValue="" // Add a default value for the description
+          render={({ field }) => (
+            <SimpleMDE
+              {...field}
+              value={field.value || ""} // Set the value to the controlled state
+              onChange={field.onChange} // Call the onChange from react-hook-form
+              placeholder="Description"
+            />
+          )}
+        />
+        <Button>Submit New Issue</Button>
+      </form>
+    </div>
   );
 };
 
