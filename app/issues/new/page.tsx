@@ -1,22 +1,30 @@
 "use client"; // Ensure the whole file is treated as a client-side component
 
 import React, { useState } from "react";
-import { Button, TextField, Callout } from "@radix-ui/themes";
+import { Button, TextField, Callout, Text } from "@radix-ui/themes";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createIssueSchema } from "@/app/validationSchemas";
+import { z } from "zod";
 
 // Dynamically import SimpleMDE with SSR disabled
 const SimpleMDE = dynamic(() => import("react-simplemde-editor"), { ssr: false }); // This is because SimpleMDE tries to access the DOM, and anything that tries to access the DOM can't be SSR.
 
-interface IssueForm {
-  title: string;
-  description: string;
-}
+type IssueForm = z.infer<typeof createIssueSchema>;
+
 const NewIssuePage = () => {
-  const { register, control, handleSubmit } = useForm<IssueForm>();
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<IssueForm>({
+    resolver: zodResolver(createIssueSchema)
+  });
 
   const router = useRouter();
 
@@ -29,6 +37,7 @@ const NewIssuePage = () => {
           <Callout.Text>{error}</Callout.Text>
         </Callout.Root>
       )}
+
       <form
         className="space-y-3"
         onSubmit={handleSubmit(async (data) => {
@@ -41,6 +50,11 @@ const NewIssuePage = () => {
         })}
       >
         <TextField.Root placeholder="Title" {...register("title")} />
+        {errors.title && (
+          <Text color="red" as="p">
+            {errors.title.message}
+          </Text>
+        )}
         <Controller
           name="description"
           control={control}
@@ -54,6 +68,11 @@ const NewIssuePage = () => {
             />
           )}
         />
+        {errors.description && (
+          <Text color="red" as="p">
+            {errors.description.message}
+          </Text>
+        )}
         <Button>Submit New Issue</Button>
       </form>
     </div>
