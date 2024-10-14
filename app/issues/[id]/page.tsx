@@ -6,7 +6,10 @@ import IssueDetails from "./IssueDetails";
 import DeleteIssueButton from "./DeleteIssueButton";
 import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
-import AssigneeSelect from "./AssigneeSelect";
+import dynamic from "next/dynamic";
+// import AssigneeSelect from "./AssigneeSelect";
+
+const AssigneeSelect = dynamic(() => import("./AssigneeSelect"), { ssr: false });
 
 interface Props {
   params: { id: string };
