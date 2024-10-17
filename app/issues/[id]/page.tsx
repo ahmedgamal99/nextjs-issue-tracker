@@ -7,7 +7,8 @@ import DeleteIssueButton from "./DeleteIssueButton";
 import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
 import dynamic from "next/dynamic";
-import { Description } from "@radix-ui/themes/dist/esm/components/alert-dialog.js";
+
+import { cache } from "react";
 
 const AssigneeSelect = dynamic(() => import("./AssigneeSelect"), { ssr: false });
 
@@ -15,15 +16,20 @@ interface Props {
   params: { id: string };
 }
 
+const fetchIssue = cache((issueId: number) =>
+  prisma.issue.findUnique({
+    where: {
+      id: issueId
+    }
+  })
+);
 const IssueDetailPage = async ({ params }: Props) => {
   const session = await getServerSession(authOptions);
 
   const issueId = parseInt(params.id, 10);
   if (isNaN(issueId)) notFound();
 
-  const issue = await prisma.issue.findUnique({
-    where: { id: parseInt(params.id) }
-  });
+  const issue = await fetchIssue(parseInt(params.id));
 
   if (!issue) notFound();
 
@@ -47,7 +53,7 @@ const IssueDetailPage = async ({ params }: Props) => {
 };
 
 export async function generateMetadata({ params }: Props) {
-  const issue = await prisma.issue.findUnique({ where: { id: parseInt(params.id) } });
+  const issue = await fetchIssue(parseInt(params.id));
 
   return {
     title: issue?.title,
